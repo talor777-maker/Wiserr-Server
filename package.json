@@ -1,0 +1,8 @@
+{
+  "name": "wiserr-server",
+  "version": "4.0.0",
+  "description": "Wiserr Senior Advisor Gig Builder — Per-user isolated storage",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=16" }
+}

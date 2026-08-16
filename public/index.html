@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiserr — כניסה</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0e0c;color:#faf8f4;font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{width:100%;max-width:400px;padding:48px 40px;border:1px solid rgba(184,151,42,0.25);background:#0a0908;text-align:center}
+.line{width:60px;height:1px;background:linear-gradient(90deg,transparent,#d4af37,transparent);margin:0 auto 28px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:32px;color:#d4af37;letter-spacing:.1em;margin-bottom:6px}
+.sub{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6b6760;margin-bottom:40px}
+.label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6b6760;margin-bottom:8px;text-align:right}
+.input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(184,151,42,.25);color:#faf8f4;font-family:'Jost',sans-serif;font-size:20px;letter-spacing:.3em;padding:14px;text-align:center;outline:none;transition:border-color .2s;margin-bottom:18px;direction:ltr}
+.input:focus{border-color:#d4af37}
+.input::placeholder{color:#6b6760;font-size:13px;letter-spacing:.1em}
+.btn{width:100%;padding:14px;background:rgba(184,151,42,.12);border:1px solid rgba(184,151,42,.4);color:#d4af37;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn:hover{background:rgba(184,151,42,.22)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.err{font-size:13px;color:#c07070;margin-top:12px;min-height:18px}
+.hint{font-size:12px;color:#6b6760;margin-top:28px;line-height:1.8;border-top:1px solid rgba(184,151,42,.12);padding-top:24px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="line"></div>
+  <div class="logo">WISERR</div>
+  <div class="sub">פלטפורמת הייעוץ הבכיר</div>
+  <div class="label">קוד גישה אישי</div>
+  <input class="input" id="code" type="text" placeholder="הכנס קוד" maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')verify()">
+  <button class="btn" id="btn" onclick="verify()">כניסה למערכת</button>
+  <div class="err" id="err"></div>
+  <div class="hint">הקוד שלך הוא אישי ופרטי.<br>רק תיקיית הפרופילים שלך גלויה לך.</div>
+</div>
+<script>
+async function verify() {
+  const code = document.getElementById('code').value.trim();
+  if (!code) return;
+  const btn = document.getElementById('btn');
+  btn.disabled = true; btn.textContent = 'מאמת...';
+  document.getElementById('err').textContent = '';
+  try {
+    const res = await fetch('/api/verify', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({code})
+    });
+    const data = await res.json();
+    if (data.valid) {
+      sessionStorage.setItem('wiserr_code', code.toUpperCase());
+      window.location.href = '/app.html';
+    } else {
+      document.getElementById('err').textContent = 'קוד שגוי. נסה שוב.';
+      btn.disabled = false; btn.textContent = 'כניסה למערכת';
+    }
+  } catch(e) {
+    document.getElementById('err').textContent = 'שגיאת חיבור.';
+    btn.disabled = false; btn.textContent = 'כניסה למערכת';
+  }
+}
+</script>
+</body>
+</html>

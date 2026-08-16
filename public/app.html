@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiserr — Senior Advisor Gig Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --ink: #0f0e0c;
+  --ink2: #3a3832;
+  --ink3: #6b6760;
+  --parchment: #faf8f4;
+  --parchment2: #f2ede4;
+  --parchment3: #e8e0d0;
+  --gold: #b8972a;
+  --gold2: #d4af37;
+  --gold-light: #f5eec8;
+  --rule: rgba(184,151,42,0.25);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Jost', sans-serif;
+  --radius: 2px;
+  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: var(--sans);
+  font-weight: 300;
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+/* ── Layout ── */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: #0a0908;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: #13120f;
+}
+
+/* ── Sidebar ── */
+.sidebar-logo {
+  padding: 32px 28px 24px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.logo-mark {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--gold2);
+}
+
+.logo-sub {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-top: 4px;
+}
+
+.sidebar-section {
+  padding: 20px 28px 12px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.candidate-item {
+  padding: 12px 28px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-item:hover { background: rgba(255,255,255,0.03); }
+.candidate-item.active {
+  border-left-color: var(--gold);
+  background: rgba(184,151,42,0.06);
+}
+
+.candidate-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(184,151,42,0.15);
+  border: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--gold2);
+  flex-shrink: 0;
+}
+
+.candidate-name {
+  font-size: 13px;
+  color: var(--parchment2);
+  font-weight: 400;
+}
+
+.candidate-role {
+  font-size: 11px;
+  color: var(--ink3);
+  margin-top: 1px;
+}
+
+.btn-new {
+  margin: 16px 28px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 56px);
+  justify-content: center;
+}
+
+.btn-new:hover {
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px 28px;
+  border-top: 1px solid var(--rule);
+}
+
+.api-key-wrap { position: relative; }
+.api-key-label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+.api-key-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--rule);
+  color: var(--parchment3);
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  transition: var(--transition);
+}
+.api-key-input:focus { border-color: var(--gold); }
+
+/* ── Main area ── */
+.main-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 48px 80px;
+}
+
+/* ── Upload screen ── */
+.upload-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+}
+
+.upload-ornament {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold2), transparent);
+  margin: 0 auto 32px;
+}
+
+.upload-title {
+  font-family: var(--serif);
+  font-size: 38px;
+  font-weight: 300;
+  color: var(--parchment);
+  line-height: 1.2;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.upload-sub {
+  font-size: 13px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+  margin-bottom: 48px;
+  max-width: 400px;
+  line-height: 1.8;
+}
+
+.drop-zone {
+  border: 1px solid var(--rule);
+  padding: 48px 64px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: rgba(255,255,255,0.015);
+  position: relative;
+}
+
+.drop-zone:hover, .drop-zone.dragging {
+  border-color: var(--gold);
+  background: rgba(184,151,42,0.04);
+}
+
+.drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+
+.drop-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.drop-label {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.drop-formats {
+  font-size: 11px;
+  color: var(--ink3);
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* ── Processing state ── */
+.processing-wrap {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.processing-crest {
+  font-family: var(--serif);
+  font-size: 48px;
+  color: var(--gold2);
+  opacity: 0.4;
+  animation: breathe 2s ease-in-out infinite;
+  margin-bottom: 24px;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.04); }
+}
+
+.processing-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--parchment2);
+  margin-bottom: 8px;
+}
+
+.processing-step {
+  font-size: 12px;
+  color: var(--ink3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.progress-rule {
+  width: 200px;
+  height: 1px;
+  background: var(--rule);
+  margin: 24px auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  left: -100%;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold2), transparent);
+  animation: sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from { transform: translateX(0); }
+  to { transform: translateX(200%); }
+}
+
+/* ── Profile header ── */
+.profile-header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 32px;
+  margin-bottom: 40px;
+}
+
+.profile-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.profile-name {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 300;
+  color: var(--parchment);
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.profile-tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink3);
+  margin-bottom: 20px;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+}
+
+.badge.gold {
+  border-color: var(--gold);
+  color: var(--gold2);
+  background: rgba(184,151,42,0.06);
+}
+
+/* ── Section header ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ── Gig cards ── */
+.gig-card {
+  border: 1px solid var(--rule);
+  background: rgba(255,255,255,0.018);
+  margin-bottom: 20px;
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.gig-presale {
+  border-color: rgba(184,151,42,0.5) !important;
+  background: rgba(184,151,42,0.04) !important;
+}
+
+.gig-card:hover {
+  border-color: rgba(184,151,42,0.4);
+  background: rgba(255,255,255,0.025);
+}
+
+.gig-card-header {
+  padding: 24px 28px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.gig-number {
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.gig-title-text {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--parchment);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.gig-subtitle {
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.6;
+}
+
+.gig-price-badge {
+  background: rgba(184,151,42,0.1);
+  border: 1px solid var(--rule);
+  padding: 8px 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.gig-price-from {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.gig-price-val {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--gold2);
+}
+
+.gig-body {
+  display: none;
+  border-top: 1px solid var(--rule);
+}
+
+.gig-body.open { display: block; }
+
+/* ── Tabs ── */
+.gig-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gig-tab {
+  padding: 12px 24px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  margin-bottom: -1px;
+}
+
+.gig-tab:hover { color: var(--parchment2); }
+.gig-tab.active {
+  color: var(--gold2);
+  border-bottom-color: var(--gold2);
+}
+
+.tab-panel { display: none; padding: 28px; }
+.tab-panel.active { display: block; }
+
+/* ── Description text ── */
+.desc-text {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--parchment2);
+  white-space: pre-wrap;
+}
+
+/* ── Packages ── */
+.pkg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+}
+
+.pkg-col {
+  background: #13120f;
+  padding: 20px;
+}
+
+.pkg-col.featured { background: rgba(184,151,42,0.06); }
+
+.pkg-tier {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.pkg-price {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--parchment);
+  margin-bottom: 8px;
+}
+
+.pkg-name-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--parchment2);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pkg-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink3);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.pkg-check {
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Keywords / FAQ ── */
+.kw-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kw-tag {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.kw-tag:hover {
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.faq-item { margin-bottom: 20px; }
+
+.faq-q {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--parchment2);
+  margin-bottom: 6px;
+}
+
+.faq-a {
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.7;
+}
+
+/* ── Copy button ── */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  float: right;
+}
+
+.copy-btn:hover { border-color: var(--gold); color: var(--gold2); }
+.copy-btn.copied { border-color: #4a7c59; color: #6db384; }
+
+/* ── Export button ── */
+.export-bar {
+  display: flex;
+  gap: 12px;
+  padding: 20px 28px;
+  border-top: 1px solid var(--rule);
+  background: rgba(0,0,0,0.2);
+}
+
+.btn-export {
+  padding: 10px 20px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink3);
+}
+
+.btn-export:hover { border-color: var(--gold); color: var(--gold2); }
+
+.btn-export.primary {
+  background: rgba(184,151,42,0.12);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.btn-export.primary:hover {
+  background: rgba(184,151,42,0.2);
+}
+
+/* ── Insight cards ── */
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  margin-bottom: 40px;
+}
+
+.insight-card {
+  background: #13120f;
+  padding: 20px 24px;
+}
+
+.insight-val {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--gold2);
+  margin-bottom: 4px;
+}
+
+.insight-lbl {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* ── Error ── */
+.error-box {
+  border: 1px solid rgba(180,60,60,0.3);
+  background: rgba(180,60,60,0.06);
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: #e09090;
+  line-height: 1.6;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  color: var(--ink3);
+}
+
+.empty-glyph {
+  font-family: var(--serif);
+  font-size: 64px;
+  opacity: 0.15;
+  margin-bottom: 24px;
+}
+
+.empty-text {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Help modal ── */
+.help-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.help-overlay.open { display: flex; }
+.help-modal {
+  background: #0f0e0c;
+  border: 1px solid var(--rule);
+  max-width: 560px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 40px;
+}
+.help-close {
+  float: right;
+  background: transparent;
+  border: none;
+  color: var(--ink3);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  margin-top: -4px;
+}
+.help-close:hover { color: var(--parchment); }
+.help-title {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--parchment);
+  margin-bottom: 6px;
+}
+.help-rule { height: 1px; background: var(--rule); margin: 20px 0; }
+.help-step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+.help-num {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--gold2);
+  opacity: 0.5;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.help-step-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--parchment2);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.help-step-body {
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.7;
+}
+.help-link {
+  color: var(--gold2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.help-link:hover { border-color: var(--gold2); }
+.help-note {
+  background: rgba(184,151,42,0.06);
+  border: 1px solid var(--rule);
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.btn-help {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(184,151,42,0.12);
+  border: 1px solid var(--rule);
+  color: var(--gold2);
+  font-family: var(--serif);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  z-index: 50;
+}
+.btn-help:hover { background: rgba(184,151,42,0.22); border-color: var(--gold); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(184,151,42,0.2); border-radius: 2px; }
+
+/* ── Tooltips ── */
+.has-tip {
+  position: relative;
+}
+.has-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1916;
+  border: 1px solid var(--rule);
+  color: var(--parchment2);
+  font-size: 11px;
+  font-family: var(--sans);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  padding: 6px 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 100;
+  line-height: 1.5;
+}
+.has-tip:hover::after {
+  opacity: 1;
+}
+
+/* ── Job Match ── */
+.job-match-section {
+  margin-top: 48px;
+  border-top: 1px solid var(--rule);
+  padding-top: 32px;
+}
+.job-search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.job-search-input {
+  flex: 1;
+  min-width: 200px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--rule);
+  color: var(--parchment);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.job-search-input:focus { border-color: var(--gold); }
+.job-search-input::placeholder { color: var(--ink3); }
+.job-preset {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.job-preset-btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--sans);
+}
+.job-preset-btn:hover { border-color: var(--gold); color: var(--gold2); }
+.job-card {
+  border: 1px solid var(--rule);
+  background: rgba(255,255,255,0.018);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.job-card:hover { border-color: rgba(184,151,42,0.4); }
+.job-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.job-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--parchment);
+  margin-bottom: 4px;
+}
+.job-company {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.job-match-score {
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 60px;
+}
+.job-match-pct {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--gold2);
+  display: block;
+}
+.job-match-lbl {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.job-why {
+  font-size: 13px;
+  color: var(--parchment3);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.job-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.job-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+}
+.job-tag.match { border-color: var(--gold); color: var(--gold2); }
+.job-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--ink3);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.job-loading-glyph {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--gold2);
+  opacity: 0.3;
+  animation: breathe 2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">WISERR</div>
+      <div class="logo-sub">Senior Advisor · Gig Builder</div>
+    </div>
+
+    <div class="sidebar-section">Candidates</div>
+    <div id="candidate-list"></div>
+
+    <button class="btn-new" onclick="showUpload()">
+      <span>+</span> New Candidate
+    </button>
+
+    <div class="sidebar-footer">
+      <div style="font-size:11px;color:var(--gold);opacity:0.8;letter-spacing:0.06em">Wiserr · Senior Advisor Platform</div>
+      <div style="font-size:10px;color:var(--ink3);margin-top:4px">Powered by Anthropic AI</div>
+    </div>
+    </aside>
+
+  <!-- Help modal -->
+  <div class="help-overlay" id="help-overlay" onclick="if(event.target===this)closeHelp()">
+    <div class="help-modal">
+      <button class="help-close" onclick="closeHelp()">&#x2715;</button>
+      <div class="help-title">Getting Started</div>
+      <div style="font-size:12px;color:var(--ink3);letter-spacing:0.1em;text-transform:uppercase">Wiserr &middot; Senior Advisor Gig Builder</div>
+      <div class="help-rule"></div>
+
+      <div class="help-step">
+        <div class="help-num">1</div>
+        <div>
+          <div class="help-step-title">Get an Anthropic API Key</div>
+          <div class="help-step-body">Go to <a class="help-link" href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, sign up or log in, then navigate to <strong style="color:var(--parchment2)">API Keys &rarr; Create Key</strong>. Copy the key &mdash; it starts with <code style="color:var(--gold2);font-size:11px">sk-ant-</code>. New accounts receive free credits.</div>
+        </div>
+      </div>
+
+      <div class="help-step">
+        <div class="help-num">2</div>
+        <div>
+          <div class="help-step-title">Enter the key in the sidebar</div>
+          <div class="help-step-body">Paste your API key in the field at the <strong style="color:var(--parchment2)">bottom-left</strong> of this screen, under &ldquo;Anthropic API Key&rdquo;. It is saved only in your browser &mdash; never sent anywhere except directly to Anthropic.</div>
+        </div>
+      </div>
+
+      <div class="help-step">
+        <div class="help-num">3</div>
+        <div>
+          <div class="help-step-title">Add a candidate</div>
+          <div class="help-step-body">Click <strong style="color:var(--parchment2)">+ New Candidate</strong> in the sidebar, then upload a r&eacute;sum&eacute; as a <strong style="color:var(--parchment2)">PDF or plain text file</strong>. The AI analyses the profile and generates 5 tailored Fiverr gigs in about 20&ndash;30 seconds.</div>
+        </div>
+      </div>
+
+      <div class="help-step">
+        <div class="help-num">4</div>
+        <div>
+          <div class="help-step-title">Review and copy gig content</div>
+          <div class="help-step-body">Click any gig card to expand it. Use the tabs to navigate between Description, Packages, Keywords, and FAQ. Every section has a <strong style="color:var(--parchment2)">Copy</strong> button &mdash; paste directly into Fiverr.</div>
+        </div>
+      </div>
+
+      <div class="help-step">
+        <div class="help-num">5</div>
+        <div>
+          <div class="help-step-title">Export as a standalone page</div>
+          <div class="help-step-body">Click <strong style="color:var(--parchment2)">Export Gig Page &darr;</strong> on any gig to download a fully designed HTML file. <strong style="color:var(--parchment2)">Export All &darr;</strong> downloads all 5 gigs at once.</div>
+        </div>
+      </div>
+
+      <div class="help-rule"></div>
+      <div class="help-note">
+        <strong style="color:var(--parchment2)">Privacy:</strong> Your API key and all candidate data are stored only in your browser&rsquo;s local storage. Nothing is sent to any server other than the Anthropic API during analysis.
+      </div>
+    </div>
+  </div>
+
+  <!-- Help button -->
+  <button class="btn-help" onclick="openHelp()" title="Help &amp; instructions">?</button>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="main-inner" id="main-content">
+      <div class="empty-state">
+        <div class="empty-glyph">&#10087;</div>
+        <div class="empty-text">Select or add a candidate</div>
+        <div style="margin-top:16px;font-size:12px;color:var(--ink3)">New here? <span style="color:var(--gold2);cursor:pointer;border-bottom:1px solid var(--rule)" onclick="openHelp()">Read the guide</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Help ──────────────────────────────────────────────────────────────
+function openHelp() {
+  document.getElementById('help-overlay').classList.add('open');
+}
+function closeHelp() {
+  document.getElementById('help-overlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+
+// ── State ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'wiserr_candidates';
+let candidates = []; // loaded from server on init
+let activeId = null;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── Persistence ─────────────────────────────────────────────────────────
+async function saveAll() {
+  // No-op: candidates are saved individually via saveCandidateToServer
+}
+
+async function saveCandidateToServer(candidate) {
+  const code = sessionStorage.getItem('wiserr_code') || '';
+  try {
+    await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-access-code': code },
+      body: JSON.stringify(candidate)
+    });
+  } catch(e) { console.error('Save failed:', e); }
+}
+
+async function deleteCandidateFromServer(id) {
+  const code = sessionStorage.getItem('wiserr_code') || '';
+  try {
+    await fetch('/api/candidates/' + id, {
+      method: 'DELETE',
+      headers: { 'x-access-code': code }
+    });
+  } catch(e) { console.error('Delete failed:', e); }
+}
+
+async function loadCandidatesFromServer() {
+  const code = sessionStorage.getItem('wiserr_code') || '';
+  try {
+    const res = await fetch('/api/candidates', { headers: { 'x-access-code': code } });
+    if (res.ok) {
+      const data = await res.json();
+      candidates = data.candidates || [];
+    }
+  } catch(e) { console.error('Load failed:', e); }
+}
+
+
+function getApiKey() { return sessionStorage.getItem('wiserr_code') || ''; }
+
+
+// ── Init ──────────────────────────────────────────────────────────────
+(async function init() {
+  if (checkSharedView()) return;
+  // Load candidates from server (isolated per access code)
+  await loadCandidatesFromServer();
+  renderSidebar();
+  if (candidates.length > 0) selectCandidate(candidates[0].id);
+})();
+
+// ── Sidebar ───────────────────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('candidate-list');
+  if (candidates.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = candidates.map(c => `
+    <div class="candidate-item ${c.id === activeId ? 'active' : ''}"
+         onclick="selectCandidate('${c.id}')">
+      <div class="candidate-avatar">${initials(c.name)}</div>
+      <div>
+        <div class="candidate-name">${c.name}</div>
+        <div class="candidate-role">${c.topRole || 'Analysing...'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initials(name) {
+  return (name || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+// ── Upload screen ─────────────────────────────────────────────────────
+function showUpload() {
+  activeId = null;
+  renderSidebar();
+  document.getElementById('main-content').innerHTML = `
+    <div class="upload-screen">
+      <div class="upload-ornament"></div>
+      <h1 class="upload-title">Add a Candidate</h1>
+      <p class="upload-sub">Upload a résumé to generate tailored Fiverr gigs for a senior advisor</p>
+      <div class="drop-zone" id="drop-zone"
+           ondragover="event.preventDefault(); this.classList.add('dragging')"
+           ondragleave="this.classList.remove('dragging')"
+           ondrop="handleDrop(event)">
+        <input type="file" accept=".pdf,.txt" onchange="handleFile(this.files[0])">
+        <div class="drop-icon">⬆</div>
+        <div class="drop-label">Drop résumé here or click to browse</div>
+        <div class="drop-formats">PDF or plain text</div>
+      </div>
+      <div id="upload-error"></div>
+    </div>
+  `;
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragging');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+}
+
+async function handleFile(file) {
+  if (!file) return;
+  const key = 'server';
+
+  showProcessing('Reading résumé...');
+  try {
+    let text;
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      text = await extractPdfText(file);
+    } else {
+      text = await file.text();
+    }
+    await analyseResume(text);
+  } catch(err) {
+    showError('Failed to read file: ' + err.message);
+  }
+}
+
+async function extractPdfText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+// ── Processing UI ─────────────────────────────────────────────────────
+function showProcessing(step) {
+  document.getElementById('main-content').innerHTML = `
+    <div class="processing-wrap">
+      <div class="processing-crest">❦</div>
+      <div class="processing-title">Analysing Profile</div>
+      <div class="progress-rule"><div class="progress-fill"></div></div>
+      <div class="processing-step" id="proc-step">${step}</div>
+    </div>
+  `;
+}
+
+function setStep(s) {
+  const el = document.getElementById('proc-step');
+  if (el) el.textContent = s;
+}
+
+function showError(msg) {
+  document.getElementById('main-content').innerHTML = `
+    <div style="padding: 60px 0">
+      <div class="error-box">${msg}</div>
+      <button class="btn-export" onclick="showUpload()" style="margin-top:16px">← Try Again</button>
+    </div>
+  `;
+}
+
+// ── AI Analysis ───────────────────────────────────────────────────────
+async function analyseResume(resumeText) {
+  const key = getApiKey();
+  setStep('Identifying expertise domains...');
+
+  const systemPrompt = `You are an expert at analysing senior executive résumés and designing premium Fiverr consulting gigs. You write in refined, precise English suited to C-level audiences. You produce structured JSON only — no markdown fences, no extra text.`;
+
+  const userPrompt = `Analyse this résumé and produce a JSON object with this exact structure:
+
+{
+  "name": "First Last",
+  "topRole": "One-line current/most recent title",
+  "tagline": "Elegant one-sentence positioning statement (serif, sophisticated tone)",
+  "yearsExperience": number,
+  "industries": ["industry1", "industry2"],
+  "keyStrengths": ["strength1", "strength2", "strength3"],
+  "estimatedMonthlyRevenue": "$X,XXX",
+  "gigs": [
+    {
+      "id": "gig1",
+      "rank": 1,
+      "niche": "Short niche label",
+      "isPresale": false,
+      "competitiveEdge": "One sentence — what makes this gig impossible to replicate by any other seller on Fiverr",
+      "marketGap": "One sentence — what gap in the Fiverr market this gig fills",
+      "candidateStory": "2-3 sentences — the specific defining moment or result from the résumé that proves this person is uniquely qualified. Use real names, numbers, and outcomes.",
+      "title": "I will [action] your [object] to [outcome]",
+      "subtitle": "2-line supporting description for the gig card",
+      "packages": {
+        "basic": { "name": "Name", "price": YOUR_PRICE, "deliverable": "What they get", "items": ["item1","item2","item3"] },
+        "standard": { "name": "Name", "price": YOUR_PRICE, "deliverable": "What they get", "items": ["item1","item2","item3","item4"] },
+        "premium": { "name": "Name", "price": YOUR_PRICE, "deliverable": "What they get", "items": ["item1","item2","item3","item4","item5"] }
+      },
+      "description": "Fiverr gig description ~400 words. Structure: (1) THE STORY — 2 sentences from candidateStory, personal and specific. (2) THE PROBLEM — 1 sentence pain point. (3) What I deliver: 5 bullet points. (4) Who this is for: 3 bullet points. (5) Why no one else: 2 sentences from competitiveEdge. End with: Message me before ordering. I offer a 30-minute paid discovery call ($250) to determine fit.",
+      "keywords": ["kw1","kw2","kw3","kw4","kw5","kw6","kw7","kw8"],
+      "faq": [
+        { "q": "Question?", "a": "Answer." },
+        { "q": "Question?", "a": "Answer." },
+        { "q": "Question?", "a": "Answer." },
+        { "q": "Question?", "a": "Answer." }
+      ]
+    }
+  ]
+
+Rules:
+- Produce exactly 6 gigs total:
+  * Gig 1 (rank 0): ALWAYS a "Discovery Call / Presale" gig — set isPresale: true
+    Title: "I will offer you a 60-minute strategic advisory session to assess your challenge"
+    This is the cold-start gig. Basic=$250 (30 min), Standard=$450 (60 min), Premium=$850 (90 min + written summary)
+    Purpose: generates first reviews, qualifies serious buyers, builds trust before larger engagements
+    Description must emphasise: no commitment required, structured agenda, tangible output from the call
+  * Gigs 2-6 (rank 1-5): core consulting gigs, ranked by revenue potential (most profitable first)
+- For each gig, identify the competitiveEdge and marketGap BEFORE writing the description — the description must flow from these
+- The candidateStory must use REAL details from the résumé: real company names, real numbers, real outcomes
+- Gig titles must start with "I will" and include a specific outcome (not vague like "help you grow")
+- PRICING RULES (critical — every gig must have different prices based on its unique value):
+  * Determine price based on: niche rarity, candidate seniority, measurable results in résumé, and global vs local scope
+  * Basic: entry-level deliverable, 1-3 days work. Range $75-$400 depending on niche
+  * Standard: full strategy or advisory session. Range $200-$900 depending on niche  
+  * Premium: comprehensive package with calls and implementation. Range $500-$2,000 depending on niche
+  * Niche pricing guide:
+    - Data Monetization / FinTech / AI Strategy: premium niche, price 30-50% above average
+    - Global GTM / International Expansion: high value, price 20-40% above average
+    - B2B Enterprise Sales / Negotiation: strong demand, price at average
+    - Business Model / SaaS Optimization: competitive market, price at or slightly below average
+    - General Business Strategy: crowded market, price 10-20% below average
+  * Add 20% for every 5 years of experience above 10 years
+  * Add 15% if candidate has managed P&L above $100M or portfolios above €500M
+  * Add 25% if candidate has named Fortune 500 or global brand experience (e.g. Hertz, IBM, Microsoft)
+  * Each gig MUST have different prices — never repeat the same price across gigs
+  * Round all prices to nearest $25
+- Extract specific numbers, company names, and measurable results — use them in candidateStory and description
+- PSYCHOLOGICAL PRICING: never use round numbers. Vary the endings naturally — sometimes 7, sometimes 8, sometimes 9, occasionally 5. Examples: $247, $298, $395, $449, $497, $548, $597, $648, $749, $797, $895, $948, $997, $1,097, $1,195, $1,298, $1,397, $1,495. Choose endings that feel human and unconsidered, not mechanical. Never use the same ending twice in a row across packages. The presale gig is fixed at $250/$450/$850
+- Tone: aristocratic, precise, long-term oriented — someone who has accomplished more than they need to prove
+- Keywords: choose 8 keywords per gig that balance high search volume with low competition on Fiverr. Mix broad terms (e.g. "business strategy") with specific niche terms (e.g. "data monetization fintech"). Include at least 2 long-tail keywords per gig (3+ words)
+- FAQ: make answers specific and confident — avoid generic answers. Reference real credentials where possible
+
+RÉSUMÉ:
+${resumeText.substring(0, 8000)}`;
+
+  try {
+    const accessCode = sessionStorage.getItem('wiserr_code') || '';
+    const res = await fetch('/api/analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-access-code': accessCode },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 16000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const rawText = data.content.map(b => b.text || '').join('');
+
+    setStep('Structuring gig packages...');
+    await delay(400);
+
+    let profile;
+    try {
+      let clean = rawText.trim();
+      clean = clean.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      const first = clean.indexOf('{');
+      const last = clean.lastIndexOf('}');
+      if (first !== -1 && last !== -1) clean = clean.slice(first, last + 1);
+      profile = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('Parse error: ' + rawText.substring(0, 200));
+    }
+
+    setStep('Composing descriptions...');
+    await delay(400);
+
+    const candidate = {
+      id: 'c_' + Date.now(),
+      name: profile.name || 'Candidate',
+      topRole: profile.topRole || '',
+      profile
+    };
+
+    candidates.unshift(candidate);
+    await saveCandidateToServer(candidate);
+    renderSidebar();
+    selectCandidate(candidate.id);
+
+  } catch(err) {
+    showError(err.message);
+  }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── Candidate view ────────────────────────────────────────────────────
+function selectCandidate(id) {
+  activeId = id;
+  renderSidebar();
+  const c = candidates.find(x => x.id === id);
+  if (!c) return;
+  renderProfile(c);
+}
+
+function renderProfile(c) {
+  const p = c.profile;
+  const totalMin = p.gigs.reduce((s, g) => s + g.packages.basic.price, 0);
+  const totalMax = p.gigs.reduce((s, g) => s + g.packages.premium.price, 0);
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-eyebrow">Senior Advisor Profile · Wiserr</div>
+      <h1 class="profile-name">${p.name}</h1>
+      <p class="profile-tagline">${p.tagline || p.topRole}</p>
+      <div class="profile-badges">
+        <span class="badge gold">Fiverr Pro Candidate</span>
+        <span class="badge">${p.yearsExperience}+ Years Experience</span>
+        ${(p.industries || []).slice(0,3).map(i => `<span class="badge">${i}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-val">${p.gigs.length}</div>
+        <div class="insight-lbl">Recommended gigs</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-val">$${Math.round(totalMin / p.gigs.length)}</div>
+        <div class="insight-lbl">Avg. entry price</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-val">${p.estimatedMonthlyRevenue || '$2,500+'}</div>
+        <div class="insight-lbl">Est. monthly potential</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-label">Recommended Gigs</div>
+      <div class="section-rule"></div>
+      <button class="btn-export has-tip" data-tip="Download full profile — all gigs in one Word document" onclick="exportWord('${c.id}')" style="border-color:rgba(100,140,200,0.5);color:#8ab4f8">⬇ Export Word</button>
+      <button class="btn-export has-tip" data-tip="Download all 6 gigs — each with a step-by-step copy & paste guide for Fiverr" onclick="exportAllLaunchPads('${c.id}')" style="border-color:rgba(184,151,42,0.5);color:var(--gold2)">⚡ GigLaunchPad All ↓</button>
+    </div>
+
+    <div id="gig-list">
+      ${p.gigs.map((g, i) => renderGigCard(g, i)).join('')}
+    </div>
+
+    <div class="job-match-section">
+      <div class="section-head">
+        <div class="section-label">Job Match — התאמת משרות</div>
+        <div class="section-rule"></div>
+      </div>
+      <div style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.7">
+        הכנס שם חברה ישראלית — ה-AI יסרוק את דף הקריירה שלה וימצא משרות המתאימות לפרופיל של ${p.name}.
+      </div>
+      <div class="job-preset">
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','מיקרוסופט ישראל',this)">מיקרוסופט ישראל</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Check Point',this)">Check Point</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','אינטל ישראל',this)">אינטל ישראל</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','רפאל',this)">רפאל</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','בנק לאומי',this)">בנק לאומי</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','טבע',this)">טבע</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Wix',this)">Wix</button>
+        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Monday.com',this)">Monday.com</button>
+      </div>
+      <div class="job-search-bar">
+        <input class="job-search-input" id="job-input-${c.id}" placeholder="הכנס שם חברה... (למשל: אמזון ישראל, סלקום, Bank Hapoalim)" onkeydown="if(event.key==='Enter') searchJobs('${c.id}', this.value)">
+        <button class="btn-export primary" onclick="searchJobs('${c.id}', document.getElementById('job-input-${c.id}').value)">חפש משרות</button>
+      </div>
+      <div id="job-results-${c.id}"></div>
+    </div>
+
+    <div style="margin-top:32px;border-top:1px solid var(--rule);padding-top:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn-export primary" id="share-btn-${c.id}" class="btn-export primary has-tip" data-tip="Create a shareable link for this profile" onclick="shareCandidate('${c.id}')">⬆ שתף פרופיל — העתק קישור</button>
+      <button class="btn-export" onclick="deleteCandidate('${c.id}')" style="color:#a05050;border-color:rgba(160,80,80,0.3)">Remove Candidate</button>
+    </div>
+    <div id="share-result-${c.id}" style="margin-top:12px;display:none;padding:14px 18px;border:1px solid var(--rule);background:rgba(184,151,42,0.06)">
+      <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">קישור לשיתוף</div>
+      <div id="share-long-${c.id}">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <div id="share-url-${c.id}" style="font-size:11px;color:var(--ink3);font-family:monospace;flex:1;word-break:break-all;direction:ltr;max-height:48px;overflow:hidden"></div>
+          <button class="btn-export" style="flex-shrink:0" onclick="copyShareUrl('${c.id}')">העתק</button>
+        </div>
+        <button class="btn-export primary" onclick="shortenUrl('${c.id}',this)" style="font-size:11px">✂ קצר את הקישור</button>
+      </div>
+      <div id="share-short-${c.id}" style="display:none">
+        <div style="font-size:11px;color:var(--ink3);margin-bottom:6px">קישור מקוצר:</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div id="short-url-${c.id}" style="font-family:monospace;font-size:15px;color:var(--gold2);flex:1;direction:ltr"></div>
+          <button class="btn-export" onclick="copyShortUrl('${c.id}')">העתק</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--ink3);margin-top:10px;line-height:1.6">שלח את הקישור לכל מי שרוצה לצפות בפרופיל — ללא סיסמה, ללא התקנות.</div>
+    </div>
+  `;
+}
+
+function renderGigCard(g, i) {
+  const isPresale = g.isPresale || g.rank === 0;
+  const presaleBadge = isPresale ? `<span style="background:rgba(184,151,42,0.15);color:var(--gold2);font-size:10px;padding:3px 10px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;display:inline-block">Discovery Call · First Engagement</span><br>` : '';
+  const gigLabel = isPresale ? 'Presale Gig' : `Gig ${g.rank || i} · ${g.niche}`;
+
+  return `
+  <div class="gig-card ${isPresale ? 'gig-presale' : ''}" id="gig-${g.id}">
+    <div class="gig-card-header" onclick="toggleGig('${g.id}')">
+      <div>
+        ${presaleBadge}
+        <div class="gig-number">${gigLabel}</div>
+        <div class="gig-title-text">${g.title}</div>
+        <div class="gig-subtitle">${g.subtitle}</div>
+      </div>
+      <div class="gig-price-badge">
+        <span class="gig-price-from">from</span>
+        <span class="gig-price-val">$${g.packages.basic.price}</span>
+      </div>
+    </div>
+    <div class="gig-body" id="body-${g.id}">
+
+      ${g.candidateStory || g.competitiveEdge ? `
+      <div style="padding:16px 24px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        ${g.candidateStory ? `<div>
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Seller's Story</div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--parchment2);line-height:1.7">${escHtml(g.candidateStory)}</div>
+        </div>` : ''}
+        ${g.competitiveEdge ? `<div>
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Competitive Edge</div>
+          <div style="font-size:13px;color:var(--parchment3);line-height:1.7">${escHtml(g.competitiveEdge)}</div>
+          ${g.marketGap ? `<div style="font-size:11px;color:var(--ink3);margin-top:8px;line-height:1.6">Market Gap: ${escHtml(g.marketGap)}</div>` : ''}
+        </div>` : ''}
+      </div>` : ''}
+
+      <div class="gig-tabs">
+        <div class="gig-tab active" onclick="switchTab('${g.id}','desc',this)">Description</div>
+        <div class="gig-tab" onclick="switchTab('${g.id}','pkg',this)">Packages</div>
+        <div class="gig-tab" onclick="switchTab('${g.id}','kw',this)">Keywords</div>
+        <div class="gig-tab" onclick="switchTab('${g.id}','faq',this)">FAQ</div>
+      </div>
+
+      <div class="tab-panel active" id="tab-desc-${g.id}">
+        <button class="copy-btn has-tip" data-tip="Copy gig description" onclick="copyText('desc-content-${g.id}',this)">⎘ Copy</button>
+        <div class="desc-text" id="desc-content-${g.id}">${escHtml(g.description)}</div>
+      </div>
+
+      <div class="tab-panel" id="tab-pkg-${g.id}">
+        <div class="pkg-grid">
+          ${renderPkg(g.packages.basic, false)}
+          ${renderPkg(g.packages.standard, true)}
+          ${renderPkg(g.packages.premium, false)}
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-kw-${g.id}">
+        <div class="kw-list">
+          ${(g.keywords||[]).map(k => `<div class="kw-tag" onclick="copyDirect('${escAttr(k)}',this)">${escHtml(k)}</div>`).join('')}
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-faq-${g.id}">
+        <button class="copy-btn has-tip" data-tip="Copy all FAQ entries" onclick="copyFaq('${g.id}',this)">⎘ Copy All</button>
+        ${(g.faq||[]).map(f => `
+          <div class="faq-item">
+            <div class="faq-q">Q: ${escHtml(f.q)}</div>
+            <div class="faq-a">A: ${escHtml(f.a)}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="export-bar">
+        <button class="btn-export primary has-tip" data-tip="Step-by-step copy guide for uploading to Fiverr" onclick="exportLaunchPad('${activeId}','${g.id}')">⚡ GigLaunchPad ↓</button>
+        <button class="btn-export has-tip" data-tip="Download a designed HTML page to share with colleagues" onclick="exportGigHtml('${activeId}','${g.id}')">⬇ HTML</button>
+        <button class="copy-btn has-tip" style="float:none" data-tip="Copy all gig text to clipboard" onclick="copyFullGig('${g.id}',this)">⎘ Copy</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPkg(pkg, featured) {
+  return `
+  <div class="pkg-col ${featured ? 'featured' : ''}">
+    ${featured ? '<div class="badge gold" style="font-size:9px;margin-bottom:8px">Most popular</div>' : ''}
+    <div class="pkg-tier">${pkg.name}</div>
+    <div class="pkg-price">$${pkg.price}</div>
+    <div class="pkg-name-text">${escHtml(pkg.deliverable)}</div>
+    ${(pkg.items||[]).map(item => `
+      <div class="pkg-item">
+        <span class="pkg-check">✦</span>
+        <span>${escHtml(item)}</span>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+// ── Interactions ──────────────────────────────────────────────────────
+function toggleGig(id) {
+  const body = document.getElementById('body-' + id);
+  body.classList.toggle('open');
+}
+
+function switchTab(gigId, tabName, el) {
+  document.querySelectorAll(`#gig-${gigId} .gig-tab`).forEach(t => t.classList.remove('active'));
+  document.querySelectorAll(`#gig-${gigId} .tab-panel`).forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`tab-${tabName}-${gigId}`).classList.add('active');
+}
+
+function copyText(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyDirect(text, el) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = el.textContent;
+    el.textContent = '✓';
+    setTimeout(() => el.textContent = orig, 1200);
+  });
+}
+
+function copyFaq(gigId, btn) {
+  const c = candidates.find(x => x.id === activeId);
+  if (!c) return;
+  const gig = c.profile.gigs.find(g => g.id === gigId);
+  if (!gig) return;
+  const text = (gig.faq||[]).map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy All'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyFullGig(gigId, btn) {
+  const c = candidates.find(x => x.id === activeId);
+  if (!c) return;
+  const gig = c.profile.gigs.find(g => g.id === gigId);
+  if (!gig) return;
+  const text = [
+    'TITLE:\n' + gig.title,
+    '\nDESCRIPTION:\n' + gig.description,
+    '\nKEYWORDS:\n' + (gig.keywords||[]).join(', '),
+    '\nFAQ:\n' + (gig.faq||[]).map(f => `Q: ${f.q}\nA: ${f.a}`).join('\n\n'),
+    '\nPACKAGES:\n' +
+      `Basic ($${gig.packages.basic.price}): ${gig.packages.basic.deliverable}\n` +
+      `Standard ($${gig.packages.standard.price}): ${gig.packages.standard.deliverable}\n` +
+      `Premium ($${gig.packages.premium.price}): ${gig.packages.premium.deliverable}`
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy All Text'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+async function deleteCandidate(id) {
+  if (!confirm('Remove this candidate and all their gigs?')) return;
+  candidates = candidates.filter(c => c.id !== id);
+  await deleteCandidateFromServer(id);
+  activeId = null;
+  renderSidebar();
+  if (candidates.length > 0) selectCandidate(candidates[0].id);
+  else showUpload();
+}
+
+// ── Export ────────────────────────────────────────────────────────────
+function exportGigHtml(candidateId, gigId) {
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+  const gig = c.profile.gigs.find(g => g.id === gigId);
+  if (!gig) return;
+  const html = buildGigHtml(c.profile, gig);
+  downloadHtml(html, `${slugify(gig.title)}.html`);
+}
+
+function exportAllGigs(candidateId) {
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+  c.profile.gigs.forEach(g => {
+    const html = buildGigHtml(c.profile, g);
+    downloadHtml(html, `${slugify(c.profile.name)}-${slugify(g.niche)}.html`);
+  });
+}
+
+function buildGigHtml(profile, gig) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${gig.title} — ${profile.name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f0e0c;--parchment:#faf8f4;--parchment2:#f2ede4;--parchment3:#e8e0d0;--gold:#b8972a;--gold2:#d4af37;--rule:rgba(184,151,42,0.2);--serif:'Cormorant Garamond',Georgia,serif;--sans:'Jost',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--parchment);font-family:var(--sans);font-weight:300;font-size:16px;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:64px 32px}
+.eyebrow{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+h1{font-family:var(--serif);font-size:38px;font-weight:300;line-height:1.2;color:var(--parchment);margin-bottom:16px}
+.rule{height:1px;background:linear-gradient(90deg,var(--rule),transparent);margin:32px 0}
+.desc{font-family:var(--serif);font-size:17px;line-height:2;color:var(--parchment2);white-space:pre-wrap}
+.pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);margin:32px 0}
+.pkg{background:#13120f;padding:24px}
+.pkg.feat{background:rgba(184,151,42,.06)}
+.pkg-tier{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.pkg-price{font-family:var(--serif);font-size:32px;color:var(--parchment);margin-bottom:8px}
+.pkg-del{font-size:13px;color:var(--parchment2);margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.pkg-item{display:flex;gap:8px;font-size:12px;color:#6b6760;margin-bottom:8px}
+.pkg-check{color:var(--gold)}
+.kw-wrap{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.kw{font-size:11px;padding:4px 10px;border:1px solid var(--rule);color:#6b6760}
+.faq-q{font-family:var(--serif);font-size:16px;color:var(--parchment2);margin-bottom:4px;margin-top:20px}
+.faq-a{font-size:13px;color:#6b6760;line-height:1.7}
+.advisor-card{display:flex;align-items:center;gap:20px;border:1px solid var(--rule);padding:24px;margin-top:40px}
+.advisor-initials{width:56px;height:56px;border-radius:50%;background:rgba(184,151,42,.12);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;color:var(--gold2);flex-shrink:0}
+.advisor-name{font-family:var(--serif);font-size:20px;color:var(--parchment);margin-bottom:4px}
+.advisor-role{font-size:12px;color:#6b6760}
+.section-lbl{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin:40px 0 16px}
+
+/* ── Tooltips ── */
+.has-tip {
+  position: relative;
+}
+.has-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1916;
+  border: 1px solid var(--rule);
+  color: var(--parchment2);
+  font-size: 11px;
+  font-family: var(--sans);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  padding: 6px 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 100;
+  line-height: 1.5;
+}
+.has-tip:hover::after {
+  opacity: 1;
+}
+
+/* ── Job Match ── */
+.job-match-section {
+  margin-top: 48px;
+  border-top: 1px solid var(--rule);
+  padding-top: 32px;
+}
+.job-search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.job-search-input {
+  flex: 1;
+  min-width: 200px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--rule);
+  color: var(--parchment);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.job-search-input:focus { border-color: var(--gold); }
+.job-search-input::placeholder { color: var(--ink3); }
+.job-preset {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.job-preset-btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--sans);
+}
+.job-preset-btn:hover { border-color: var(--gold); color: var(--gold2); }
+.job-card {
+  border: 1px solid var(--rule);
+  background: rgba(255,255,255,0.018);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.job-card:hover { border-color: rgba(184,151,42,0.4); }
+.job-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.job-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--parchment);
+  margin-bottom: 4px;
+}
+.job-company {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.job-match-score {
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 60px;
+}
+.job-match-pct {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--gold2);
+  display: block;
+}
+.job-match-lbl {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.job-why {
+  font-size: 13px;
+  color: var(--parchment3);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.job-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.job-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+}
+.job-tag.match { border-color: var(--gold); color: var(--gold2); }
+.job-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--ink3);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.job-loading-glyph {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--gold2);
+  opacity: 0.3;
+  animation: breathe 2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Fiverr Pro · Senior Advisory Services</div>
+  <h1>${gig.title}</h1>
+  <p style="font-size:14px;color:#6b6760;margin-bottom:8px">${gig.subtitle}</p>
+  <div class="rule"></div>
+  <div class="section-lbl">About This Service</div>
+  <div class="desc">${escHtml(gig.description)}</div>
+  <div class="section-lbl">Service Packages</div>
+  <div class="pkg-grid">
+    <div class="pkg">
+      <div class="pkg-tier">${gig.packages.basic.name}</div>
+      <div class="pkg-price">$${gig.packages.basic.price}</div>
+      <div class="pkg-del">${escHtml(gig.packages.basic.deliverable)}</div>
+      ${gig.packages.basic.items.map(i=>`<div class="pkg-item"><span class="pkg-check">✦</span>${escHtml(i)}</div>`).join('')}
+    </div>
+    <div class="pkg feat">
+      <div class="pkg-tier">${gig.packages.standard.name}</div>
+      <div class="pkg-price">$${gig.packages.standard.price}</div>
+      <div class="pkg-del">${escHtml(gig.packages.standard.deliverable)}</div>
+      ${gig.packages.standard.items.map(i=>`<div class="pkg-item"><span class="pkg-check">✦</span>${escHtml(i)}</div>`).join('')}
+    </div>
+    <div class="pkg">
+      <div class="pkg-tier">${gig.packages.premium.name}</div>
+      <div class="pkg-price">$${gig.packages.premium.price}</div>
+      <div class="pkg-del">${escHtml(gig.packages.premium.deliverable)}</div>
+      ${gig.packages.premium.items.map(i=>`<div class="pkg-item"><span class="pkg-check">✦</span>${escHtml(i)}</div>`).join('')}
+    </div>
+  </div>
+  <div class="section-lbl">Keywords</div>
+  <div class="kw-wrap">${(gig.keywords||[]).map(k=>`<div class="kw">${escHtml(k)}</div>`).join('')}</div>
+  <div class="section-lbl">Frequently Asked Questions</div>
+  ${(gig.faq||[]).map(f=>`<div><div class="faq-q">Q: ${escHtml(f.q)}</div><div class="faq-a">A: ${escHtml(f.a)}</div></div>`).join('')}
+  <div class="advisor-card">
+    <div class="advisor-initials">${initials(profile.name)}</div>
+    <div>
+      <div class="advisor-name">${escHtml(profile.name)}</div>
+      <div class="advisor-role">${escHtml(profile.topRole)}</div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+function exportAllLaunchPads(candidateId) {
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+  c.profile.gigs.forEach((g, i) => {
+    setTimeout(() => {
+      const html = buildLaunchPadHtml(c.profile, g);
+      downloadHtml(html, 'GigLaunchPad-' + (i+1) + '-' + slugify(g.niche || g.title) + '.html');
+    }, i * 400);
+  });
+}
+
+function exportLaunchPad(candidateId, gigId) {
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+  const gig = c.profile.gigs.find(g => g.id === gigId);
+  if (!gig) return;
+  const html = buildLaunchPadHtml(c.profile, gig);
+  downloadHtml(html, 'GigLaunchPad-' + slugify(gig.niche || gig.title) + '.html');
+}
+
+function buildLaunchPadHtml(profile, gig) {
+  const isPresale = gig.isPresale || gig.rank === 0;
+  const steps = [
+    { id:'title', label:'Gig Title',       hint:'Fiverr → Overview tab → Title field',                           value: gig.title },
+    { id:'desc',  label:'Description',     hint:'Fiverr → Overview tab → Description field',                     value: gig.description },
+    { id:'pkg_b', label:'Basic Package',   hint:'Fiverr → Pricing tab → Basic column',                           value: 'Name: ' + gig.packages.basic.name + '\nPrice: $' + gig.packages.basic.price + '\nDescription: ' + gig.packages.basic.deliverable + '\n\nIncludes:\n' + (gig.packages.basic.items||[]).map(i=>'• '+i).join('\n') },
+    { id:'pkg_s', label:'Standard Package',hint:'Fiverr → Pricing tab → Standard column',                        value: 'Name: ' + gig.packages.standard.name + '\nPrice: $' + gig.packages.standard.price + '\nDescription: ' + gig.packages.standard.deliverable + '\n\nIncludes:\n' + (gig.packages.standard.items||[]).map(i=>'• '+i).join('\n') },
+    { id:'pkg_p', label:'Premium Package', hint:'Fiverr → Pricing tab → Premium column',                         value: 'Name: ' + gig.packages.premium.name + '\nPrice: $' + gig.packages.premium.price + '\nDescription: ' + gig.packages.premium.deliverable + '\n\nIncludes:\n' + (gig.packages.premium.items||[]).map(i=>'• '+i).join('\n') },
+    { id:'kw',    label:'Keywords / Tags', hint:'Fiverr → Overview tab → Tags field (add each keyword separately)', value: (gig.keywords||[]).join(', ') },
+    { id:'faq',   label:'FAQ',             hint:'Fiverr → Description tab → FAQ section',                        value: (gig.faq||[]).map(f=>'Q: '+f.q+'\nA: '+f.a).join('\n\n') },
+  ];
+
+  const vJson = JSON.stringify(steps.reduce((o,s)=>{o[s.id]=s.value;return o;},{})).replace(/<\/script>/gi,'<\\/script>');
+
+  const stepsHtml = steps.map((s,i) => '<div class="step" id="s-' + s.id + '"><div class="shdr" onclick="tog(\'' + s.id + '\')"><div class="schk" onclick="event.stopPropagation();chk(\'' + s.id + '\')"><span id="ci-' + s.id + '">○</span></div><div class="snum">' + (i+1) + '</div><div class="sinf"><div class="slbl">' + s.label + '</div><div class="shnt">' + s.hint + '</div></div><button class="cgb" id="b-' + s.id + '" onclick="event.stopPropagation();cgo(\'' + s.id + '\')">Copy &amp; Go →</button></div><div class="sbdy" id="bd-' + s.id + '"><pre class="spre">' + s.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div></div>').join('');
+
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GigLaunchPad · ' + (gig.niche||'Gig') + ' · ' + profile.name + '</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"><style>:root{--ink:#0f0e0c;--p:#faf8f4;--p2:#f2ede4;--g:#b8972a;--g2:#d4af37;--rule:rgba(184,151,42,.2);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",sans-serif;--grn:#4a7c59}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--ink);color:var(--p);font-family:var(--sans);font-weight:300;font-size:15px}.wrap{max-width:740px;margin:0 auto;padding:40px 24px 80px}.badge{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--g);margin-bottom:10px}.title{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--p);margin-bottom:6px}.sub{font-size:13px;color:#6b6760;margin-bottom:28px}.fiverr-btn{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid var(--rule);background:rgba(184,151,42,.06);margin-bottom:22px;text-decoration:none;transition:.2s}.fiverr-btn:hover{border-color:var(--g)}.fb-lbl{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--g)}.fb-hint{font-size:12px;color:#6b6760;margin-top:3px}.fb-arr{font-size:20px;color:var(--g2)}.plbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6b6760;margin-bottom:6px}.pbar{background:rgba(255,255,255,.05);height:3px;border-radius:2px;margin-bottom:22px;overflow:hidden}.pfill{height:100%;background:linear-gradient(90deg,var(--g),var(--g2));width:0%;transition:width .4s}.step{border:1px solid var(--rule);margin-bottom:8px;overflow:hidden;transition:border-color .2s}.step.done{border-color:rgba(74,124,89,.35);background:rgba(74,124,89,.03)}.step.open{border-color:rgba(184,151,42,.45)}.shdr{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer}.shdr:hover{background:rgba(255,255,255,.02)}.schk{width:26px;height:26px;border-radius:50%;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:.2s;font-size:13px;color:#6b6760}.schk:hover{border-color:var(--grn)}.step.done .schk{background:var(--grn);border-color:var(--grn);color:#fff}.snum{font-family:var(--serif);font-size:17px;color:var(--g2);width:18px;flex-shrink:0;text-align:center}.step.done .snum{color:var(--grn)}.sinf{flex:1;min-width:0}.slbl{font-size:14px;font-weight:400;color:var(--p);margin-bottom:2px}.step.done .slbl{color:#6b6760;text-decoration:line-through}.shnt{font-size:11px;color:#6b6760;line-height:1.5}.cgb{flex-shrink:0;padding:7px 14px;background:rgba(184,151,42,.1);border:1px solid var(--rule);color:var(--g2);font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap}.cgb:hover{background:rgba(184,151,42,.2);border-color:var(--g)}.cgb.copied{background:rgba(74,124,89,.15);border-color:var(--grn);color:#6db384}.sbdy{display:none;border-top:1px solid var(--rule);padding:16px 18px}.step.open .sbdy{display:block}pre.spre{font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--p2);white-space:pre-wrap;word-break:break-word}.done-box{display:none;border:1px solid rgba(74,124,89,.4);background:rgba(74,124,89,.07);padding:22px;text-align:center;margin-top:18px}.done-box.show{display:block}.done-g{font-family:var(--serif);font-size:28px;color:#6db384;margin-bottom:6px}.done-t{font-family:var(--serif);font-size:20px;color:var(--p);margin-bottom:4px}.done-s{font-size:13px;color:#6b6760}.sc{display:flex;align-items:center;gap:14px;border:1px solid var(--rule);padding:16px;margin-top:24px}.si{width:42px;height:42px;border-radius:50%;background:rgba(184,151,42,.12);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--g2);flex-shrink:0}.sn{font-family:var(--serif);font-size:16px;color:var(--p);margin-bottom:2px}.sr{font-size:12px;color:#6b6760}</style></head><body><div class="wrap"><div class="badge">GigLaunchPad · Wiserr</div><h1 class="title">' + gig.title + '</h1><p class="sub">' + (isPresale ? 'Discovery Call' : (gig.niche||'')) + ' · ' + profile.name + '</p><a class="fiverr-btn" href="https://www.fiverr.com/seller_onboarding/gig" target="_blank"><div><div class="fb-lbl">Open Fiverr → Create New Gig</div><div class="fb-hint">Keep this page open — copy each field, paste into Fiverr, tick done</div></div><div class="fb-arr">↗</div></a><div class="plbl" id="plbl">0 of 7 fields completed</div><div class="pbar"><div class="pfill" id="pfill"></div></div>' + stepsHtml + '<div class="done-box" id="dbox"><div class="done-g">✦</div><div class="done-t">All Fields Completed</div><div class="done-s">Review your gig on Fiverr and click Publish.</div></div><div class="sc"><div class="si">' + profile.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase() + '</div><div><div class="sn">' + profile.name + '</div><div class="sr">' + (profile.topRole||'') + '</div></div></div></div><script>const V=' + vJson + ';const T=7;const D=new Set();function tog(id){document.getElementById("s-"+id).classList.toggle("open");}function chk(id){const s=document.getElementById("s-"+id);const c=document.getElementById("ci-"+id);if(D.has(id)){D.delete(id);s.classList.remove("done");c.textContent="○";}else{D.add(id);s.classList.add("done");s.classList.remove("open");c.textContent="✓";}document.getElementById("pfill").style.width=Math.round(D.size/T*100)+"%";document.getElementById("plbl").textContent=D.size+" of "+T+" fields completed";document.getElementById("dbox").classList.toggle("show",D.size===T);}function cgo(id){const btn=document.getElementById("b-"+id);const s=document.getElementById("s-"+id);navigator.clipboard.writeText(V[id]).then(()=>{btn.textContent="✓ Copied!";btn.classList.add("copied");s.classList.add("open");setTimeout(()=>window.open("https://www.fiverr.com/seller_onboarding/gig","_blank"),400);setTimeout(()=>{btn.textContent="Copy & Go →";btn.classList.remove("copied");},2500);});}<\/script></body></html>';
+}
+
+function exportWord(candidateId) {
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+  const p = c.profile;
+
+  let rtf = '{\\rtf1\\ansi\\deff0\n';
+  rtf += '{\\fonttbl{\\f0\\froman\\fcharset0 Times New Roman;}{\\f1\\fswiss\\fcharset0 Arial;}}\n';
+  rtf += '{\\colortbl;\\red184\\green151\\blue42;\\red15\\blue10\\green14;\\red107\\green103\\blue96;}\n';
+
+  function esc(s) {
+    return String(s||'')
+      .replace(/\\/g,'\\\\')
+      .replace(/\{/g,'\\{')
+      .replace(/\}/g,'\\}')
+      .replace(/[^\x00-\x7F]/g, c => {
+        const code = c.charCodeAt(0);
+        return code > 255 ? `\\u${code}?` : `\\'${code.toString(16).padStart(2,'0')}`;
+      });
+  }
+
+  // Title
+  rtf += `{\\pard\\f0\\fs64\\b\\cf1 ${esc(p.name)}\\par}\n`;
+  rtf += `{\\pard\\f1\\fs28\\cf3\\i ${esc(p.tagline||p.topRole||'')}\\par}\n`;
+  rtf += '{\\pard\\brdrb\\brdrs\\brdrw10\\brdrsp40 \\par}\n';
+
+  // Summary line
+  rtf += `{\\pard\\f1\\fs26\\cf3 ${p.yearsExperience||''}+ Years Experience  |  ${(p.industries||[]).join('  ·  ')}\\par}\\pard\\par\n`;
+
+  // Each gig
+  (p.gigs||[]).forEach((g, i) => {
+    const isPresale = g.isPresale || g.rank === 0;
+    rtf += `{\\pard\\f0\\fs42\\b\\cf1 ${esc(isPresale ? 'Discovery Call · First Engagement' : `Gig ${g.rank||i+1} · ${g.niche||''}`)}\\par}\n`;
+    rtf += `{\\pard\\f0\\fs34\\b ${esc(g.title)}\\par}\n`;
+    rtf += `{\\pard\\f1\\fs26\\cf3\\i ${esc(g.subtitle||'')}\\par}\\pard\\par\n`;
+
+    // Story & Edge
+    if (g.candidateStory) {
+      rtf += `{\\pard\\f1\\fs22\\cf1 SELLER\'S STORY\\par}\n`;
+      rtf += `{\\pard\\f0\\fs28\\i ${esc(g.candidateStory)}\\par}\\pard\\par\n`;
+    }
+    if (g.competitiveEdge) {
+      rtf += `{\\pard\\f1\\fs22\\cf1 COMPETITIVE EDGE\\par}\n`;
+      rtf += `{\\pard\\f1\\fs26 ${esc(g.competitiveEdge)}\\par}\\pard\\par\n`;
+    }
+
+    // Description
+    rtf += `{\\pard\\f1\\fs22\\cf1 DESCRIPTION\\par}\n`;
+    rtf += `{\\pard\\f1\\fs26 ${esc(g.description||'')}\\par}\\pard\\par\n`;
+
+    // Packages
+    rtf += `{\\pard\\f1\\fs22\\cf1 PACKAGES\\par}\n`;
+    ['basic','standard','premium'].forEach(tier => {
+      const pkg = g.packages?.[tier];
+      if (!pkg) return;
+      rtf += `{\\pard\\f1\\fs28\\b ${esc(pkg.name)} — $${pkg.price}\\par}\n`;
+      rtf += `{\\pard\\f1\\fs26 ${esc(pkg.deliverable||'')}\\par}\n`;
+      (pkg.items||[]).forEach(item => {
+        rtf += `{\\pard\\f1\\fs26\\li360 \\bullet  ${esc(item)}\\par}\n`;
+      });
+    });
+    rtf += '{\\pard\\par}\n';
+
+    // Keywords
+    rtf += `{\\pard\\f1\\fs22\\cf1 KEYWORDS\\par}\n`;
+    rtf += `{\\pard\\f1\\fs26 ${esc((g.keywords||[]).join(' · '))}\\par}\\pard\\par\n`;
+
+    // FAQ
+    rtf += `{\\pard\\f1\\fs22\\cf1 FAQ\\par}\n`;
+    (g.faq||[]).forEach(f => {
+      rtf += `{\\pard\\f1\\fs26\\b Q: ${esc(f.q)}\\par}\n`;
+      rtf += `{\\pard\\f1\\fs26 A: ${esc(f.a)}\\par}\\pard\\par\n`;
+    });
+
+    // Divider between gigs
+    rtf += '{\\pard\\brdrb\\brdrs\\brdrw5\\brdrsp40 \\par}\\pard\\par\n';
+  });
+
+  rtf += '}';
+
+  const blob = new Blob([rtf], { type: 'application/rtf' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = slugify(p.name) + '-wiserr-profile.rtf';
+  a.click();
+}
+
+function downloadHtml(html, filename) {
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s||'').replace(/'/g, "\\'");
+}
+function slugify(s) {
+  return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').substring(0,50);
+}
+
+
+// ── Job Match ──────────────────────────────────────────────────────────
+async function searchJobs(candidateId, company, btn) {
+  if (!company || !company.trim()) return;
+  company = company.trim();
+
+  const c = candidates.find(x => x.id === candidateId);
+  if (!c) return;
+
+  const resultsDiv = document.getElementById('job-results-' + candidateId);
+  if (!resultsDiv) return;
+
+  // Loading state
+  resultsDiv.innerHTML = `
+    <div class="job-loading">
+      <div class="job-loading-glyph">❦</div>
+      <div>מחפש משרות ב-${escHtml(company)}...</div>
+      <div style="margin-top:6px;font-size:11px;opacity:0.5">ה-AI סורק ומנתח התאמה לפרופיל</div>
+    </div>`;
+
+  const profile = c.profile;
+  const key = getApiKey();
+
+  const prompt = `You are a senior talent advisor. A candidate has the following profile:
+
+Name: ${profile.name}
+Role: ${profile.topRole}
+Experience: ${profile.yearsExperience}+ years
+Industries: ${(profile.industries||[]).join(', ')}
+Key strengths: ${(profile.keyStrengths||[]).join(', ')}
+Gigs/expertise areas: ${(profile.gigs||[]).map(g => g.niche).join(', ')}
+
+The user wants to find relevant job openings at: "${company}"
+
+Your task:
+1. Based on your knowledge of ${company} as a company operating in Israel, identify 3-5 realistic job types or roles that this company typically hires for that would match this candidate's profile.
+2. For each role, estimate a match percentage (0-100%) based on how well the candidate's background fits.
+3. Explain WHY this candidate is a good fit for each role in 1-2 sentences.
+4. Note: You may not have real-time job listings. Generate plausible, realistic roles based on what you know about the company and the candidate's profile.
+
+Respond ONLY with a JSON array:
+[
+  {
+    "title": "Job title in English or Hebrew",
+    "type": "Full-time / Part-time / Consulting / Advisory",
+    "matchScore": 85,
+    "why": "Why this candidate fits — specific, based on their actual experience",
+    "tags": ["tag1", "tag2", "tag3"],
+    "matchTags": ["skill that matches", "experience that matches"]
+  }
+]
+
+Return 3-5 jobs. JSON only, no markdown.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error');
+    }
+
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+
+    let jobs;
+    try {
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const first = clean.indexOf('[');
+      const last = clean.lastIndexOf(']');
+      jobs = JSON.parse(clean.slice(first, last + 1));
+    } catch(e) {
+      throw new Error('Could not parse response');
+    }
+
+    if (!jobs.length) {
+      resultsDiv.innerHTML = '<div class="job-loading">לא נמצאו משרות מתאימות.</div>';
+      return;
+    }
+
+    resultsDiv.innerHTML = `
+      <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">
+        נמצאו ${jobs.length} משרות מתאימות ב-${escHtml(company)}
+        <span style="color:var(--ink3);font-size:10px;margin-right:8px">· מבוסס על ניתוח AI</span>
+      </div>
+      ${jobs.map(job => `
+        <div class="job-card">
+          <div class="job-card-top">
+            <div>
+              <div class="job-title">${escHtml(job.title)}</div>
+              <div class="job-company">${escHtml(company)} · ${escHtml(job.type||'')}</div>
+            </div>
+            <div class="job-match-score">
+              <span class="job-match-pct">${job.matchScore}%</span>
+              <span class="job-match-lbl">התאמה</span>
+            </div>
+          </div>
+          <div class="job-why">${escHtml(job.why)}</div>
+          <div class="job-tags">
+            ${(job.matchTags||[]).map(t => `<span class="job-tag match">✦ ${escHtml(t)}</span>`).join('')}
+            ${(job.tags||[]).map(t => `<span class="job-tag">${escHtml(t)}</span>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+      <div style="font-size:11px;color:var(--ink3);margin-top:12px;line-height:1.6">
+        ⚠ הניתוח מבוסס על ידע ה-AI על החברה ועל פרופיל המועמד — לא על רישומי משרות בזמן אמת.
+        לבדיקת משרות פעילות: <a href="https://www.google.com/search?q=${encodeURIComponent(company + ' career jobs')}" target="_blank" style="color:var(--gold)">חפש באינטרנט ←</a>
+      </div>
+    `;
+
+  } catch(e) {
+    resultsDiv.innerHTML = `<div class="job-loading" style="color:#c07070">שגיאה: ${escHtml(e.message)}</div>`;
+  }
+}
+
+// ── Share via encoded URL ──────────────────────────────────────────────
+function shareCandidate(id) {
+  const c = candidates.find(x => x.id === id);
+  if (!c) return;
+  const btn = document.getElementById('share-btn-' + id);
+  const resultDiv = document.getElementById('share-result-' + id);
+  const urlDiv = document.getElementById('share-url-' + id);
+  
+  try {
+    // Encode profile as compressed base64 in URL hash
+    const json = JSON.stringify(c.profile);
+    const encoded = btoa(encodeURIComponent(json));
+    
+    // Build shareable URL pointing to view.html bundled in same file
+    const shareUrl = window.location.href.split('#')[0] + '#view=' + encoded;
+    
+    urlDiv.textContent = shareUrl;
+    resultDiv.style.display = 'block';
+    
+    // Auto-copy
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      btn.textContent = '✓ הקישור הועתק!';
+      setTimeout(() => btn.textContent = '⬆ שתף פרופיל — העתק קישור', 3000);
+    }).catch(() => {
+      btn.textContent = '✓ קישור מוכן למטה';
+    });
+  } catch(e) {
+    btn.textContent = 'שגיאה — הפרופיל גדול מדי';
+    setTimeout(() => btn.textContent = '⬆ שתף פרופיל — העתק קישור', 2000);
+  }
+}
+
+function copyShareUrl(id) {
+  const urlDiv = document.getElementById('share-url-' + id);
+  if (!urlDiv) return;
+  navigator.clipboard.writeText(urlDiv.textContent).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ הועתק';
+    setTimeout(() => btn.textContent = 'העתק', 2000);
+  });
+}
+
+function shortenUrl(id, btn) {
+  const c = candidates.find(x => x.id === id);
+  if (!c) return;
+
+  // Build short key from candidate name
+  const namePart = (c.profile?.name || 'advisor')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 20);
+  const shortKey = namePart + '-' + Math.random().toString(36).substring(2, 5);
+
+  // Save full profile data under short key in localStorage
+  localStorage.setItem('wiserr_share_' + shortKey, JSON.stringify(c.profile));
+
+  // Build short URL
+  const base = window.location.href.split('#')[0];
+  const shortUrl = base + '#p=' + shortKey;
+
+  document.getElementById('short-url-' + id).textContent = shortUrl;
+  document.getElementById('share-long-' + id).style.display = 'none';
+  document.getElementById('share-short-' + id).style.display = 'block';
+  navigator.clipboard.writeText(shortUrl).catch(() => {});
+
+  const orig = btn.textContent;
+  btn.textContent = '✓ מועתק!';
+  setTimeout(() => btn.textContent = orig, 2000);
+}
+
+function copyShortUrl(id) {
+  const el = document.getElementById('short-url-' + id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ הועתק';
+    setTimeout(() => btn.textContent = 'העתק', 2000);
+  });
+}
+
+// ── Check if opened as shared view ──────────────────────────────────
+function checkSharedView() {
+  const hash = window.location.hash;
+  // Long encoded view
+  if (hash.startsWith('#view=')) {
+    try {
+      const encoded = hash.replace('#view=', '');
+      const json = decodeURIComponent(atob(encoded));
+      const profile = JSON.parse(json);
+      showSharedView(profile);
+      return true;
+    } catch(e) { return false; }
+  }
+  // Short key view
+  if (hash.startsWith('#p=')) {
+    const key = hash.replace('#p=', '');
+    const stored = localStorage.getItem('wiserr_share_' + key);
+    if (stored) {
+      try {
+        const profile = JSON.parse(stored);
+        showSharedView(profile);
+        return true;
+      } catch(e) {}
+    }
+    // Key not found on this machine
+    document.getElementById('root') && (document.getElementById('root').innerHTML =
+      '<div class="empty-state"><div class="empty-glyph">❧</div><div class="empty-text">הקישור תקין רק על המחשב שממנו נוצר.<br>בקש מהשולח לשלוח את הקישור הארוך.</div></div>');
+    return true;
+  }
+  return false;
+}
+
+function showSharedView(p) {
+  document.querySelector('.app').innerHTML = `
+    <div style="max-width:820px;margin:0 auto;padding:40px 32px 80px">
+      <div style="background:rgba(184,151,42,0.08);border:1px solid var(--rule);padding:16px 24px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Wiserr · פרופיל משותף</div>
+          <div style="font-size:13px;color:var(--parchment3)">צפייה בלבד — ניתן להעתיק תוכן</div>
+        </div>
+        <button class="btn-export" onclick="copyViewLink()">העתק קישור לשיתוף</button>
+      </div>
+      ${renderSharedProfile(p)}
+    </div>
+  `;
+}
+
+function copyViewLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    event.target.textContent = '✓ הועתק';
+    setTimeout(() => event.target.textContent = 'העתק קישור לשיתוף', 2000);
+  });
+}
+
+function renderSharedProfile(p) {
+  const totalMin = p.gigs ? p.gigs.reduce((s,g) => s + (g.packages?.basic?.price||0), 0) : 0;
+  return `
+    <div class="profile-header">
+      <div class="profile-eyebrow">Senior Advisor Profile · Wiserr</div>
+      <h1 class="profile-name">${p.name||''}</h1>
+      <p class="profile-tagline">${p.tagline||p.topRole||''}</p>
+      <div class="profile-badges">
+        <span class="badge gold">Fiverr Pro Candidate</span>
+        <span class="badge">${p.yearsExperience||0}+ Years</span>
+        ${(p.industries||[]).slice(0,3).map(i=>`<span class="badge">${i}</span>`).join('')}
+      </div>
+    </div>
+    <div class="insight-grid">
+      <div class="insight-card"><div class="insight-val">${p.gigs?.length||0}</div><div class="insight-lbl">Gigs</div></div>
+      <div class="insight-card"><div class="insight-val">$${p.gigs?.length ? Math.round(totalMin/p.gigs.length) : 0}</div><div class="insight-lbl">Avg. entry price</div></div>
+      <div class="insight-card"><div class="insight-val">${p.estimatedMonthlyRevenue||'—'}</div><div class="insight-lbl">Est. monthly</div></div>
+    </div>
+    <div class="section-head"><div class="section-label">Recommended Gigs</div><div class="section-rule"></div></div>
+    <div id="gig-list">${(p.gigs||[]).map((g,i) => renderGigCard(g,i)).join('')}</div>
+  `;
+}
+
+</script>
+</body>
+</html>
