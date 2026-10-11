@@ -859,129 +859,6 @@ body {
 .has-tip:hover::after {
   opacity: 1;
 }
-
-/* ── Job Match ── */
-.job-match-section {
-  margin-top: 48px;
-  border-top: 1px solid var(--rule);
-  padding-top: 32px;
-}
-.job-search-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.job-search-input {
-  flex: 1;
-  min-width: 200px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--rule);
-  color: var(--parchment);
-  font-family: var(--sans);
-  font-size: 14px;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.job-search-input:focus { border-color: var(--gold); }
-.job-search-input::placeholder { color: var(--ink3); }
-.job-preset {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.job-preset-btn {
-  font-size: 11px;
-  padding: 5px 12px;
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink3);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--sans);
-}
-.job-preset-btn:hover { border-color: var(--gold); color: var(--gold2); }
-.job-card {
-  border: 1px solid var(--rule);
-  background: rgba(255,255,255,0.018);
-  padding: 20px 24px;
-  margin-bottom: 12px;
-  transition: border-color 0.2s;
-}
-.job-card:hover { border-color: rgba(184,151,42,0.4); }
-.job-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.job-title {
-  font-family: var(--serif);
-  font-size: 18px;
-  color: var(--parchment);
-  margin-bottom: 4px;
-}
-.job-company {
-  font-size: 12px;
-  color: var(--gold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.job-match-score {
-  flex-shrink: 0;
-  text-align: center;
-  min-width: 60px;
-}
-.job-match-pct {
-  font-family: var(--serif);
-  font-size: 22px;
-  color: var(--gold2);
-  display: block;
-}
-.job-match-lbl {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink3);
-}
-.job-why {
-  font-size: 13px;
-  color: var(--parchment3);
-  line-height: 1.7;
-  margin-bottom: 10px;
-}
-.job-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.job-tag {
-  font-size: 10px;
-  padding: 3px 8px;
-  border: 1px solid var(--rule);
-  color: var(--ink3);
-  letter-spacing: 0.06em;
-}
-.job-tag.match { border-color: var(--gold); color: var(--gold2); }
-.job-loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--ink3);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.job-loading-glyph {
-  font-family: var(--serif);
-  font-size: 32px;
-  color: var(--gold2);
-  opacity: 0.3;
-  animation: breathe 2s ease-in-out infinite;
-  margin-bottom: 12px;
-}
 </style>
 </head>
 <body>
@@ -1002,7 +879,7 @@ body {
     </button>
 
     <div class="sidebar-footer">
-      <div style="font-size:11px;color:var(--gold);opacity:0.8;letter-spacing:0.06em">Wiserr · Senior Advisor Platform</div>
+      <div style="font-size:11px;color:var(--gold);opacity:0.8;letter-spacing:0.08em">Wiserr · Senior Advisor Platform</div>
       <div style="font-size:10px;color:var(--ink3);margin-top:4px">Powered by Anthropic AI</div>
     </div>
     </aside>
@@ -1089,47 +966,15 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
 
 // ── State ──────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'wiserr_candidates';
-let candidates = []; // loaded from server on init
+let candidates = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let activeId = null;
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── Persistence ─────────────────────────────────────────────────────────
-async function saveAll() {
-  // No-op: candidates are saved individually via saveCandidateToServer
-}
-
-async function saveCandidateToServer(candidate) {
-  const code = sessionStorage.getItem('wiserr_code') || '';
-  try {
-    await fetch('/api/candidates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-access-code': code },
-      body: JSON.stringify(candidate)
-    });
-  } catch(e) { console.error('Save failed:', e); }
-}
-
-async function deleteCandidateFromServer(id) {
-  const code = sessionStorage.getItem('wiserr_code') || '';
-  try {
-    await fetch('/api/candidates/' + id, {
-      method: 'DELETE',
-      headers: { 'x-access-code': code }
-    });
-  } catch(e) { console.error('Delete failed:', e); }
-}
-
-async function loadCandidatesFromServer() {
-  const code = sessionStorage.getItem('wiserr_code') || '';
-  try {
-    const res = await fetch('/api/candidates', { headers: { 'x-access-code': code } });
-    if (res.ok) {
-      const data = await res.json();
-      candidates = data.candidates || [];
-    }
-  } catch(e) { console.error('Load failed:', e); }
+function saveAll() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates));
 }
 
 
@@ -1137,10 +982,9 @@ function getApiKey() { return sessionStorage.getItem('wiserr_code') || ''; }
 
 
 // ── Init ──────────────────────────────────────────────────────────────
-(async function init() {
+(function init() {
   if (checkSharedView()) return;
-  // Load candidates from server (isolated per access code)
-  await loadCandidatesFromServer();
+  // API key managed server-side
   renderSidebar();
   if (candidates.length > 0) selectCandidate(candidates[0].id);
 })();
@@ -1378,8 +1222,7 @@ ${resumeText.substring(0, 8000)}`;
     };
 
     candidates.unshift(candidate);
-    await saveCandidateToServer(candidate);
-    renderSidebar();
+    saveAll();
     selectCandidate(candidate.id);
 
   } catch(err) {
@@ -1441,32 +1284,7 @@ function renderProfile(c) {
       ${p.gigs.map((g, i) => renderGigCard(g, i)).join('')}
     </div>
 
-    <div class="job-match-section">
-      <div class="section-head">
-        <div class="section-label">Job Match — התאמת משרות</div>
-        <div class="section-rule"></div>
-      </div>
-      <div style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.7">
-        הכנס שם חברה ישראלית — ה-AI יסרוק את דף הקריירה שלה וימצא משרות המתאימות לפרופיל של ${p.name}.
-      </div>
-      <div class="job-preset">
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','מיקרוסופט ישראל',this)">מיקרוסופט ישראל</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Check Point',this)">Check Point</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','אינטל ישראל',this)">אינטל ישראל</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','רפאל',this)">רפאל</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','בנק לאומי',this)">בנק לאומי</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','טבע',this)">טבע</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Wix',this)">Wix</button>
-        <button class="job-preset-btn" onclick="searchJobs('${c.id}','Monday.com',this)">Monday.com</button>
-      </div>
-      <div class="job-search-bar">
-        <input class="job-search-input" id="job-input-${c.id}" placeholder="הכנס שם חברה... (למשל: אמזון ישראל, סלקום, Bank Hapoalim)" onkeydown="if(event.key==='Enter') searchJobs('${c.id}', this.value)">
-        <button class="btn-export primary" onclick="searchJobs('${c.id}', document.getElementById('job-input-${c.id}').value)">חפש משרות</button>
-      </div>
-      <div id="job-results-${c.id}"></div>
-    </div>
-
-    <div style="margin-top:32px;border-top:1px solid var(--rule);padding-top:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="margin-top:40px;border-top:1px solid var(--rule);padding-top:24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       <button class="btn-export primary" id="share-btn-${c.id}" class="btn-export primary has-tip" data-tip="Create a shareable link for this profile" onclick="shareCandidate('${c.id}')">⬆ שתף פרופיל — העתק קישור</button>
       <button class="btn-export" onclick="deleteCandidate('${c.id}')" style="color:#a05050;border-color:rgba(160,80,80,0.3)">Remove Candidate</button>
     </div>
@@ -1652,10 +1470,10 @@ function copyFullGig(gigId, btn) {
   });
 }
 
-async function deleteCandidate(id) {
+function deleteCandidate(id) {
   if (!confirm('Remove this candidate and all their gigs?')) return;
   candidates = candidates.filter(c => c.id !== id);
-  await deleteCandidateFromServer(id);
+  saveAll();
   activeId = null;
   renderSidebar();
   if (candidates.length > 0) selectCandidate(candidates[0].id);
@@ -1744,129 +1562,6 @@ h1{font-family:var(--serif);font-size:38px;font-weight:300;line-height:1.2;color
 .has-tip:hover::after {
   opacity: 1;
 }
-
-/* ── Job Match ── */
-.job-match-section {
-  margin-top: 48px;
-  border-top: 1px solid var(--rule);
-  padding-top: 32px;
-}
-.job-search-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.job-search-input {
-  flex: 1;
-  min-width: 200px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--rule);
-  color: var(--parchment);
-  font-family: var(--sans);
-  font-size: 14px;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.job-search-input:focus { border-color: var(--gold); }
-.job-search-input::placeholder { color: var(--ink3); }
-.job-preset {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.job-preset-btn {
-  font-size: 11px;
-  padding: 5px 12px;
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink3);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--sans);
-}
-.job-preset-btn:hover { border-color: var(--gold); color: var(--gold2); }
-.job-card {
-  border: 1px solid var(--rule);
-  background: rgba(255,255,255,0.018);
-  padding: 20px 24px;
-  margin-bottom: 12px;
-  transition: border-color 0.2s;
-}
-.job-card:hover { border-color: rgba(184,151,42,0.4); }
-.job-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.job-title {
-  font-family: var(--serif);
-  font-size: 18px;
-  color: var(--parchment);
-  margin-bottom: 4px;
-}
-.job-company {
-  font-size: 12px;
-  color: var(--gold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.job-match-score {
-  flex-shrink: 0;
-  text-align: center;
-  min-width: 60px;
-}
-.job-match-pct {
-  font-family: var(--serif);
-  font-size: 22px;
-  color: var(--gold2);
-  display: block;
-}
-.job-match-lbl {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink3);
-}
-.job-why {
-  font-size: 13px;
-  color: var(--parchment3);
-  line-height: 1.7;
-  margin-bottom: 10px;
-}
-.job-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.job-tag {
-  font-size: 10px;
-  padding: 3px 8px;
-  border: 1px solid var(--rule);
-  color: var(--ink3);
-  letter-spacing: 0.06em;
-}
-.job-tag.match { border-color: var(--gold); color: var(--gold2); }
-.job-loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--ink3);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.job-loading-glyph {
-  font-family: var(--serif);
-  font-size: 32px;
-  color: var(--gold2);
-  opacity: 0.3;
-  animation: breathe 2s ease-in-out infinite;
-  margin-bottom: 12px;
-}
 </style>
 </head>
 <body>
@@ -1947,9 +1642,9 @@ function buildLaunchPadHtml(profile, gig) {
 
   const vJson = JSON.stringify(steps.reduce((o,s)=>{o[s.id]=s.value;return o;},{})).replace(/<\/script>/gi,'<\\/script>');
 
-  const stepsHtml = steps.map((s,i) => '<div class="step" id="s-' + s.id + '"><div class="shdr" onclick="tog(\'' + s.id + '\')"><div class="schk" onclick="event.stopPropagation();chk(\'' + s.id + '\')"><span id="ci-' + s.id + '">○</span></div><div class="snum">' + (i+1) + '</div><div class="sinf"><div class="slbl">' + s.label + '</div><div class="shnt">' + s.hint + '</div></div><button class="cgb" id="b-' + s.id + '" onclick="event.stopPropagation();cgo(\'' + s.id + '\')">Copy &amp; Go →</button></div><div class="sbdy" id="bd-' + s.id + '"><pre class="spre">' + s.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div></div>').join('');
+  const stepsHtml = steps.map((s,i) => '<div class="step" id="s-' + s.id + '"><div class="shdr" onclick="tog(\'' + s.id + '\')"><div class="schk" onclick="event.stopPropagation();chk(\'' + s.id + '\')"><span id="ci-' + s.id + '">○</span></div><div class="snum">' + (i+1) + '</div><div class="sinf"><div class="slbl">' + s.label + '</div><div class="shnt">' + s.hint + '</div></div><button class="cgb" id="b-' + s.id + '" onclick="event.stopPropagation();cgo(\'' + s.id + '\')">Copy →</button></div><div class="sbdy" id="bd-' + s.id + '"><pre class="spre">' + s.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></div></div>').join('');
 
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GigLaunchPad · ' + (gig.niche||'Gig') + ' · ' + profile.name + '</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"><style>:root{--ink:#0f0e0c;--p:#faf8f4;--p2:#f2ede4;--g:#b8972a;--g2:#d4af37;--rule:rgba(184,151,42,.2);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",sans-serif;--grn:#4a7c59}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--ink);color:var(--p);font-family:var(--sans);font-weight:300;font-size:15px}.wrap{max-width:740px;margin:0 auto;padding:40px 24px 80px}.badge{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--g);margin-bottom:10px}.title{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--p);margin-bottom:6px}.sub{font-size:13px;color:#6b6760;margin-bottom:28px}.fiverr-btn{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid var(--rule);background:rgba(184,151,42,.06);margin-bottom:22px;text-decoration:none;transition:.2s}.fiverr-btn:hover{border-color:var(--g)}.fb-lbl{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--g)}.fb-hint{font-size:12px;color:#6b6760;margin-top:3px}.fb-arr{font-size:20px;color:var(--g2)}.plbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6b6760;margin-bottom:6px}.pbar{background:rgba(255,255,255,.05);height:3px;border-radius:2px;margin-bottom:22px;overflow:hidden}.pfill{height:100%;background:linear-gradient(90deg,var(--g),var(--g2));width:0%;transition:width .4s}.step{border:1px solid var(--rule);margin-bottom:8px;overflow:hidden;transition:border-color .2s}.step.done{border-color:rgba(74,124,89,.35);background:rgba(74,124,89,.03)}.step.open{border-color:rgba(184,151,42,.45)}.shdr{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer}.shdr:hover{background:rgba(255,255,255,.02)}.schk{width:26px;height:26px;border-radius:50%;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:.2s;font-size:13px;color:#6b6760}.schk:hover{border-color:var(--grn)}.step.done .schk{background:var(--grn);border-color:var(--grn);color:#fff}.snum{font-family:var(--serif);font-size:17px;color:var(--g2);width:18px;flex-shrink:0;text-align:center}.step.done .snum{color:var(--grn)}.sinf{flex:1;min-width:0}.slbl{font-size:14px;font-weight:400;color:var(--p);margin-bottom:2px}.step.done .slbl{color:#6b6760;text-decoration:line-through}.shnt{font-size:11px;color:#6b6760;line-height:1.5}.cgb{flex-shrink:0;padding:7px 14px;background:rgba(184,151,42,.1);border:1px solid var(--rule);color:var(--g2);font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap}.cgb:hover{background:rgba(184,151,42,.2);border-color:var(--g)}.cgb.copied{background:rgba(74,124,89,.15);border-color:var(--grn);color:#6db384}.sbdy{display:none;border-top:1px solid var(--rule);padding:16px 18px}.step.open .sbdy{display:block}pre.spre{font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--p2);white-space:pre-wrap;word-break:break-word}.done-box{display:none;border:1px solid rgba(74,124,89,.4);background:rgba(74,124,89,.07);padding:22px;text-align:center;margin-top:18px}.done-box.show{display:block}.done-g{font-family:var(--serif);font-size:28px;color:#6db384;margin-bottom:6px}.done-t{font-family:var(--serif);font-size:20px;color:var(--p);margin-bottom:4px}.done-s{font-size:13px;color:#6b6760}.sc{display:flex;align-items:center;gap:14px;border:1px solid var(--rule);padding:16px;margin-top:24px}.si{width:42px;height:42px;border-radius:50%;background:rgba(184,151,42,.12);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--g2);flex-shrink:0}.sn{font-family:var(--serif);font-size:16px;color:var(--p);margin-bottom:2px}.sr{font-size:12px;color:#6b6760}</style></head><body><div class="wrap"><div class="badge">GigLaunchPad · Wiserr</div><h1 class="title">' + gig.title + '</h1><p class="sub">' + (isPresale ? 'Discovery Call' : (gig.niche||'')) + ' · ' + profile.name + '</p><a class="fiverr-btn" href="https://www.fiverr.com/seller_onboarding/gig" target="_blank"><div><div class="fb-lbl">Open Fiverr → Create New Gig</div><div class="fb-hint">Keep this page open — copy each field, paste into Fiverr, tick done</div></div><div class="fb-arr">↗</div></a><div class="plbl" id="plbl">0 of 7 fields completed</div><div class="pbar"><div class="pfill" id="pfill"></div></div>' + stepsHtml + '<div class="done-box" id="dbox"><div class="done-g">✦</div><div class="done-t">All Fields Completed</div><div class="done-s">Review your gig on Fiverr and click Publish.</div></div><div class="sc"><div class="si">' + profile.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase() + '</div><div><div class="sn">' + profile.name + '</div><div class="sr">' + (profile.topRole||'') + '</div></div></div></div><script>const V=' + vJson + ';const T=7;const D=new Set();function tog(id){document.getElementById("s-"+id).classList.toggle("open");}function chk(id){const s=document.getElementById("s-"+id);const c=document.getElementById("ci-"+id);if(D.has(id)){D.delete(id);s.classList.remove("done");c.textContent="○";}else{D.add(id);s.classList.add("done");s.classList.remove("open");c.textContent="✓";}document.getElementById("pfill").style.width=Math.round(D.size/T*100)+"%";document.getElementById("plbl").textContent=D.size+" of "+T+" fields completed";document.getElementById("dbox").classList.toggle("show",D.size===T);}function cgo(id){const btn=document.getElementById("b-"+id);const s=document.getElementById("s-"+id);navigator.clipboard.writeText(V[id]).then(()=>{btn.textContent="✓ Copied!";btn.classList.add("copied");s.classList.add("open");setTimeout(()=>window.open("https://www.fiverr.com/seller_onboarding/gig","_blank"),400);setTimeout(()=>{btn.textContent="Copy & Go →";btn.classList.remove("copied");},2500);});}<\/script></body></html>';
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GigLaunchPad · ' + (gig.niche||'Gig') + ' · ' + profile.name + '</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"><style>:root{--ink:#0f0e0c;--p:#faf8f4;--p2:#f2ede4;--g:#b8972a;--g2:#d4af37;--rule:rgba(184,151,42,.2);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",sans-serif;--grn:#4a7c59}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--ink);color:var(--p);font-family:var(--sans);font-weight:300;font-size:15px}.wrap{max-width:740px;margin:0 auto;padding:40px 24px 80px}.badge{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--g);margin-bottom:10px}.title{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--p);margin-bottom:6px}.sub{font-size:13px;color:#6b6760;margin-bottom:28px}.fiverr-btn{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid var(--rule);background:rgba(184,151,42,.06);margin-bottom:22px;text-decoration:none;transition:.2s}.fiverr-btn:hover{border-color:var(--g)}.fb-lbl{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--g)}.fb-hint{font-size:12px;color:#6b6760;margin-top:3px}.fb-arr{font-size:20px;color:var(--g2)}.plbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6b6760;margin-bottom:6px}.pbar{background:rgba(255,255,255,.05);height:3px;border-radius:2px;margin-bottom:22px;overflow:hidden}.pfill{height:100%;background:linear-gradient(90deg,var(--g),var(--g2));width:0%;transition:width .4s}.step{border:1px solid var(--rule);margin-bottom:8px;overflow:hidden;transition:border-color .2s}.step.done{border-color:rgba(74,124,89,.35);background:rgba(74,124,89,.03)}.step.open{border-color:rgba(184,151,42,.45)}.shdr{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer}.shdr:hover{background:rgba(255,255,255,.02)}.schk{width:26px;height:26px;border-radius:50%;border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:.2s;font-size:13px;color:#6b6760}.schk:hover{border-color:var(--grn)}.step.done .schk{background:var(--grn);border-color:var(--grn);color:#fff}.snum{font-family:var(--serif);font-size:17px;color:var(--g2);width:18px;flex-shrink:0;text-align:center}.step.done .snum{color:var(--grn)}.sinf{flex:1;min-width:0}.slbl{font-size:14px;font-weight:400;color:var(--p);margin-bottom:2px}.step.done .slbl{color:#6b6760;text-decoration:line-through}.shnt{font-size:11px;color:#6b6760;line-height:1.5}.cgb{flex-shrink:0;padding:7px 14px;background:rgba(184,151,42,.1);border:1px solid var(--rule);color:var(--g2);font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.2s;white-space:nowrap}.cgb:hover{background:rgba(184,151,42,.2);border-color:var(--g)}.cgb.copied{background:rgba(74,124,89,.15);border-color:var(--grn);color:#6db384}.sbdy{display:none;border-top:1px solid var(--rule);padding:16px 18px}.step.open .sbdy{display:block}pre.spre{font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--p2);white-space:pre-wrap;word-break:break-word}.done-box{display:none;border:1px solid rgba(74,124,89,.4);background:rgba(74,124,89,.07);padding:22px;text-align:center;margin-top:18px}.done-box.show{display:block}.done-g{font-family:var(--serif);font-size:28px;color:#6db384;margin-bottom:6px}.done-t{font-family:var(--serif);font-size:20px;color:var(--p);margin-bottom:4px}.done-s{font-size:13px;color:#6b6760}.sc{display:flex;align-items:center;gap:14px;border:1px solid var(--rule);padding:16px;margin-top:24px}.si{width:42px;height:42px;border-radius:50%;background:rgba(184,151,42,.12);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:15px;color:var(--g2);flex-shrink:0}.sn{font-family:var(--serif);font-size:16px;color:var(--p);margin-bottom:2px}.sr{font-size:12px;color:#6b6760}</style></head><body><div class="wrap"><div class="badge">GigLaunchPad · Wiserr</div><h1 class="title">' + gig.title + '</h1><p class="sub">' + (isPresale ? 'Discovery Call' : (gig.niche||'')) + ' · ' + profile.name + '</p><a class="fiverr-btn" href="https://www.fiverr.com/seller_onboarding/gig" target="_blank"><div><div class="fb-lbl">Open Fiverr → Create New Gig</div><div class="fb-hint">Keep this page open — copy each field, paste into Fiverr, tick done</div></div><div class="fb-arr">↗</div></a><div class="plbl" id="plbl">0 of 7 fields completed</div><div class="pbar"><div class="pfill" id="pfill"></div></div>' + stepsHtml + '<div class="done-box" id="dbox"><div class="done-g">✦</div><div class="done-t">All Fields Completed</div><div class="done-s">Review your gig on Fiverr and click Publish.</div></div><div class="sc"><div class="si">' + profile.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase() + '</div><div><div class="sn">' + profile.name + '</div><div class="sr">' + (profile.topRole||'') + '</div></div></div></div><script>const V=' + vJson + ';const T=7;const D=new Set();function tog(id){document.getElementById("s-"+id).classList.toggle("open");}function chk(id){const s=document.getElementById("s-"+id);const c=document.getElementById("ci-"+id);if(D.has(id)){D.delete(id);s.classList.remove("done");c.textContent="○";}else{D.add(id);s.classList.add("done");s.classList.remove("open");c.textContent="✓";}document.getElementById("pfill").style.width=Math.round(D.size/T*100)+"%";document.getElementById("plbl").textContent=D.size+" of "+T+" fields completed";document.getElementById("dbox").classList.toggle("show",D.size===T);}function cgo(id){const btn=document.getElementById("b-"+id);const s=document.getElementById("s-"+id);navigator.clipboard.writeText(V[id]).then(()=>{btn.textContent="✓ Copied!";btn.classList.add("copied");s.classList.add("open");chk(id);setTimeout(()=>{btn.textContent="Copy →";btn.classList.remove("copied");},2500);});}<\/script></body></html>';
 }
 
 function exportWord(candidateId) {
@@ -2059,134 +1754,6 @@ function escAttr(s) {
 }
 function slugify(s) {
   return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').substring(0,50);
-}
-
-
-// ── Job Match ──────────────────────────────────────────────────────────
-async function searchJobs(candidateId, company, btn) {
-  if (!company || !company.trim()) return;
-  company = company.trim();
-
-  const c = candidates.find(x => x.id === candidateId);
-  if (!c) return;
-
-  const resultsDiv = document.getElementById('job-results-' + candidateId);
-  if (!resultsDiv) return;
-
-  // Loading state
-  resultsDiv.innerHTML = `
-    <div class="job-loading">
-      <div class="job-loading-glyph">❦</div>
-      <div>מחפש משרות ב-${escHtml(company)}...</div>
-      <div style="margin-top:6px;font-size:11px;opacity:0.5">ה-AI סורק ומנתח התאמה לפרופיל</div>
-    </div>`;
-
-  const profile = c.profile;
-  const key = getApiKey();
-
-  const prompt = `You are a senior talent advisor. A candidate has the following profile:
-
-Name: ${profile.name}
-Role: ${profile.topRole}
-Experience: ${profile.yearsExperience}+ years
-Industries: ${(profile.industries||[]).join(', ')}
-Key strengths: ${(profile.keyStrengths||[]).join(', ')}
-Gigs/expertise areas: ${(profile.gigs||[]).map(g => g.niche).join(', ')}
-
-The user wants to find relevant job openings at: "${company}"
-
-Your task:
-1. Based on your knowledge of ${company} as a company operating in Israel, identify 3-5 realistic job types or roles that this company typically hires for that would match this candidate's profile.
-2. For each role, estimate a match percentage (0-100%) based on how well the candidate's background fits.
-3. Explain WHY this candidate is a good fit for each role in 1-2 sentences.
-4. Note: You may not have real-time job listings. Generate plausible, realistic roles based on what you know about the company and the candidate's profile.
-
-Respond ONLY with a JSON array:
-[
-  {
-    "title": "Job title in English or Hebrew",
-    "type": "Full-time / Part-time / Consulting / Advisory",
-    "matchScore": 85,
-    "why": "Why this candidate fits — specific, based on their actual experience",
-    "tags": ["tag1", "tag2", "tag3"],
-    "matchTags": ["skill that matches", "experience that matches"]
-  }
-]
-
-Return 3-5 jobs. JSON only, no markdown.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'API error');
-    }
-
-    const data = await res.json();
-    const raw = data.content.map(b => b.text || '').join('');
-
-    let jobs;
-    try {
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const first = clean.indexOf('[');
-      const last = clean.lastIndexOf(']');
-      jobs = JSON.parse(clean.slice(first, last + 1));
-    } catch(e) {
-      throw new Error('Could not parse response');
-    }
-
-    if (!jobs.length) {
-      resultsDiv.innerHTML = '<div class="job-loading">לא נמצאו משרות מתאימות.</div>';
-      return;
-    }
-
-    resultsDiv.innerHTML = `
-      <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">
-        נמצאו ${jobs.length} משרות מתאימות ב-${escHtml(company)}
-        <span style="color:var(--ink3);font-size:10px;margin-right:8px">· מבוסס על ניתוח AI</span>
-      </div>
-      ${jobs.map(job => `
-        <div class="job-card">
-          <div class="job-card-top">
-            <div>
-              <div class="job-title">${escHtml(job.title)}</div>
-              <div class="job-company">${escHtml(company)} · ${escHtml(job.type||'')}</div>
-            </div>
-            <div class="job-match-score">
-              <span class="job-match-pct">${job.matchScore}%</span>
-              <span class="job-match-lbl">התאמה</span>
-            </div>
-          </div>
-          <div class="job-why">${escHtml(job.why)}</div>
-          <div class="job-tags">
-            ${(job.matchTags||[]).map(t => `<span class="job-tag match">✦ ${escHtml(t)}</span>`).join('')}
-            ${(job.tags||[]).map(t => `<span class="job-tag">${escHtml(t)}</span>`).join('')}
-          </div>
-        </div>
-      `).join('')}
-      <div style="font-size:11px;color:var(--ink3);margin-top:12px;line-height:1.6">
-        ⚠ הניתוח מבוסס על ידע ה-AI על החברה ועל פרופיל המועמד — לא על רישומי משרות בזמן אמת.
-        לבדיקת משרות פעילות: <a href="https://www.google.com/search?q=${encodeURIComponent(company + ' career jobs')}" target="_blank" style="color:var(--gold)">חפש באינטרנט ←</a>
-      </div>
-    `;
-
-  } catch(e) {
-    resultsDiv.innerHTML = `<div class="job-loading" style="color:#c07070">שגיאה: ${escHtml(e.message)}</div>`;
-  }
 }
 
 // ── Share via encoded URL ──────────────────────────────────────────────
