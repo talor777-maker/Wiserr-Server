@@ -16,7 +16,7 @@ const HARDCODED_CODES = new Set([
   'Kira2026','Israely2026','Eran2026','Liat2026','Yilan2026',
   'Michal2026','Nitzan2026','Moshe2026','Revi2026','Keren2026',
   'Noa2026','Ezer2026','Sarit2026','Galit2026','Eshi2026',
-  'Vered2026','Dana2026',Michal2026
+  'Vered2026','Dana2026',Michalcopy2026
 ]);
 
 // Also read from env if present (ACCESS_CODES=code1,code2,...)
